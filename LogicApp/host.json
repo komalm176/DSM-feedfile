@@ -1,0 +1,22 @@
+{
+    "version": "2.0",
+    "extensionBundle": {
+        "id": "Microsoft.Azure.Functions.ExtensionBundle.Workflows",
+        "version": "[1.*, 2.0.0)"
+    },
+    "extensions": {
+        "workflow": {
+            "Settings": {
+                "Runtime.FlowRetentionDays": "90"
+            }
+        },
+        "serviceBus": {
+            "prefetchCount": 0,
+            "messageHandlerOptions": {
+                "autoComplete": false,
+                "maxConcurrentCalls": 1,
+                "maxAutoRenewDuration": "00:55:00"
+            }
+        }
+    }
+}
