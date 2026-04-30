@@ -1,0 +1,17 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "<storage-connection-string>",
+        "FUNCTIONS_WORKER_RUNTIME": "node",
+        "WORKFLOWS_SUBSCRIPTION_ID": "<subscription-id>",
+        "WORKFLOWS_RESOURCE_GROUP_NAME": "<rg-name>",
+        "WORKFLOWS_LOCATION_NAME": "<region>",
+        "WORKFLOWS_MANAGEMENT_BASE_URI": "https://management.azure.com/",
+
+        "SERVICE_BUS_QUEUE_NAME": "feed-export-queue",
+        "BLOB_STORAGE_ACCOUNT": "<storage-account-name>",
+        "AZURE_FUNCTION_URL": "<azure-function-url>/api/UpdateFeedBatchExported",
+        "AZURE_FUNCTION_KEY": "<azure-function-key>",
+        "SFTPSSH_CONNECTION_KEY": "<sftp-connection-key>"
+    }
+}

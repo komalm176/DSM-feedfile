@@ -1,0 +1,177 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "Service_Bus_Trigger": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "servicebus"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/@{encodeURIComponent(encodeURIComponent(appsetting('SERVICE_BUS_QUEUE_NAME')))}/messages/head",
+                    "queries": {
+                        "maxMessageCount": 1,
+                        "subscriptionType": "Queue"
+                    }
+                },
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "operationOptions": "DisableAsyncPattern"
+            }
+        },
+        "actions": {
+            "Scope_Main": {
+                "type": "Scope",
+                "actions": {
+                    "Parse_Service_Bus_Message": {
+                        "type": "ParseJson",
+                        "runAfter": {},
+                        "inputs": {
+                            "content": "@{base64ToString(triggerBody()?['ContentData'])}",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "FeedBatchFileId": {
+                                        "type": "string"
+                                    },
+                                    "BlobPath": {
+                                        "type": "string"
+                                    },
+                                    "FileName": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "FeedBatchFileId",
+                                    "BlobPath",
+                                    "FileName"
+                                ]
+                            }
+                        }
+                    },
+                    "Get_Blob_Content": {
+                        "type": "ApiConnection",
+                        "runAfter": {
+                            "Parse_Service_Bus_Message": [
+                                "Succeeded"
+                            ]
+                        },
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "azureblob"
+                                }
+                            },
+                            "method": "get",
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(appsetting('BLOB_STORAGE_ACCOUNT')))}/files/@{encodeURIComponent(encodeURIComponent(body('Parse_Service_Bus_Message')?['BlobPath']))}/content",
+                            "queries": {
+                                "inferContentType": true
+                            }
+                        }
+                    },
+                    "Upload_To_SFTP": {
+                        "type": "ApiConnection",
+                        "runAfter": {
+                            "Get_Blob_Content": [
+                                "Succeeded"
+                            ]
+                        },
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "sftpssh"
+                                }
+                            },
+                            "method": "post",
+                            "path": "/v2/datasets/default/files",
+                            "queries": {
+                                "folderPath": "/inbound/feeds",
+                                "name": "@body('Parse_Service_Bus_Message')?['FileName']",
+                                "overwrite": true
+                            },
+                            "body": "@body('Get_Blob_Content')"
+                        }
+                    },
+                    "Invoke_Azure_Function": {
+                        "type": "Http",
+                        "runAfter": {
+                            "Upload_To_SFTP": [
+                                "Succeeded"
+                            ]
+                        },
+                        "inputs": {
+                            "method": "POST",
+                            "uri": "@appsetting('AZURE_FUNCTION_URL')",
+                            "headers": {
+                                "Content-Type": "application/json",
+                                "x-functions-key": "@appsetting('AZURE_FUNCTION_KEY')"
+                            },
+                            "body": {
+                                "FeedBatchFileId": "@body('Parse_Service_Bus_Message')?['FeedBatchFileId']"
+                            }
+                        }
+                    },
+                    "Complete_Service_Bus_Message": {
+                        "type": "ApiConnection",
+                        "runAfter": {
+                            "Invoke_Azure_Function": [
+                                "Succeeded"
+                            ]
+                        },
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "servicebus"
+                                }
+                            },
+                            "method": "delete",
+                            "path": "/@{encodeURIComponent(encodeURIComponent(appsetting('SERVICE_BUS_QUEUE_NAME')))}/messages/complete",
+                            "queries": {
+                                "lockToken": "@triggerBody()?['LockToken']",
+                                "sessionId": "",
+                                "subscriptionType": "Queue"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {}
+            },
+            "Scope_Failed": {
+                "type": "Scope",
+                "actions": {
+                    "Abandon_Service_Bus_Message": {
+                        "type": "ApiConnection",
+                        "runAfter": {},
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "servicebus"
+                                }
+                            },
+                            "method": "post",
+                            "path": "/@{encodeURIComponent(encodeURIComponent(appsetting('SERVICE_BUS_QUEUE_NAME')))}/messages/abandon",
+                            "queries": {
+                                "lockToken": "@triggerBody()?['LockToken']",
+                                "subscriptionType": "Queue"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Scope_Main": [
+                        "Failed",
+                        "TimedOut"
+                    ]
+                }
+            }
+        },
+        "outputs": {}
+    },
+    "kind": "Stateful"
+}
