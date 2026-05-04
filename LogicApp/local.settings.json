@@ -8,18 +8,17 @@
         "WORKFLOWS_LOCATION_NAME": "<region>",
         "WORKFLOWS_MANAGEMENT_BASE_URI": "https://management.azure.com/",
 
-        "SERVICE_BUS_CONNECTION_STRING": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/ServiceBusConnectionString/)",
+        "SERVICE_BUS_CONNECTION_STRING": "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<key>",
         "SERVICE_BUS_QUEUE_NAME": "feed-export-queue",
 
-        "BLOB_CONNECTION_STRING": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/BlobConnectionString/)",
+        "BLOB_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=<storage-account>;AccountKey=<key>;EndpointSuffix=core.windows.net",
+
+        "SQL_CONNECTION_STRING": "Server=<server-name>.database.windows.net;Database=db-east-support-dev-01;User Id=<username>;Password=<password>;Encrypt=True;TrustServerCertificate=False;",
 
         "SFTP_HOST": "10.171.4.11",
         "SFTP_PORT": "3022",
-        "SFTP_USERNAME": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/SftpUsername/)",
-        "SFTP_PASSWORD": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/SftpPassword/)",
-        "SFTP_FOLDER_PATH": "/inbound/feeds",
-
-        "AZURE_FUNCTION_URL": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/AzureFunctionUrl/)",
-        "AZURE_FUNCTION_KEY": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/AzureFunctionKey/)"
+        "SFTP_USERNAME": "<sftp-username>",
+        "SFTP_PASSWORD": "<sftp-password>",
+        "SFTP_FOLDER_PATH": "/inbound/feeds"
     }
 }
