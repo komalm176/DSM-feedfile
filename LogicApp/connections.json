@@ -1,42 +1,37 @@
 {
-    "managedApiConnections": {
-        "servicebus": {
-            "api": {
-                "id": "/subscriptions/<subscription-id>/providers/Microsoft.Web/locations/<region>/managedApis/servicebus"
+    "serviceProviderConnections": {
+        "serviceBus": {
+            "parameterValues": {
+                "connectionString": "@appsetting('SERVICE_BUS_CONNECTION_STRING')"
             },
-            "connection": {
-                "id": "/subscriptions/<subscription-id>/resourceGroups/<rg-name>/providers/Microsoft.Web/connections/servicebus"
+            "serviceProvider": {
+                "id": "/serviceProviders/serviceBus"
             },
-            "connectionRuntimeUrl": "<servicebus-connection-runtime-url>",
-            "authentication": {
-                "type": "ManagedServiceIdentity"
-            }
+            "displayName": "ServiceBus-FeedExport"
         },
-        "azureblob": {
-            "api": {
-                "id": "/subscriptions/<subscription-id>/providers/Microsoft.Web/locations/<region>/managedApis/azureblob"
+        "azureBlob": {
+            "parameterValues": {
+                "connectionString": "@appsetting('BLOB_CONNECTION_STRING')"
             },
-            "connection": {
-                "id": "/subscriptions/<subscription-id>/resourceGroups/<rg-name>/providers/Microsoft.Web/connections/azureblob"
+            "serviceProvider": {
+                "id": "/serviceProviders/AzureBlob"
             },
-            "connectionRuntimeUrl": "<azureblob-connection-runtime-url>",
-            "authentication": {
-                "type": "ManagedServiceIdentity"
-            }
+            "displayName": "AzureBlob-FeedExport"
         },
-        "sftpssh": {
-            "api": {
-                "id": "/subscriptions/<subscription-id>/providers/Microsoft.Web/locations/<region>/managedApis/sftpssh"
+        "sftp": {
+            "parameterValues": {
+                "hostName": "@appsetting('SFTP_HOST')",
+                "port": "@appsetting('SFTP_PORT')",
+                "userName": "@appsetting('SFTP_USERNAME')",
+                "password": "@appsetting('SFTP_PASSWORD')",
+                "sshPrivateKey": "",
+                "sshPrivateKeyPassphrase": "",
+                "acceptAnySshHostKey": true
             },
-            "connection": {
-                "id": "/subscriptions/<subscription-id>/resourceGroups/<rg-name>/providers/Microsoft.Web/connections/sftpssh"
+            "serviceProvider": {
+                "id": "/serviceProviders/Sftp"
             },
-            "connectionRuntimeUrl": "<sftpssh-connection-runtime-url>",
-            "authentication": {
-                "type": "Raw",
-                "scheme": "Key",
-                "parameter": "@appsetting('SFTPSSH_CONNECTION_KEY')"
-            }
+            "displayName": "SFTP-FeedExport"
         }
     }
 }

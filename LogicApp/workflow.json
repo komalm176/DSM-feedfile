@@ -4,25 +4,19 @@
         "contentVersion": "1.0.0.0",
         "triggers": {
             "Service_Bus_Trigger": {
-                "type": "ApiConnection",
+                "type": "ServiceProvider",
                 "inputs": {
-                    "host": {
-                        "connection": {
-                            "referenceName": "servicebus"
-                        }
+                    "parameters": {
+                        "queueName": "@appsetting('SERVICE_BUS_QUEUE_NAME')",
+                        "isSessionsEnabled": false
                     },
-                    "method": "get",
-                    "path": "/@{encodeURIComponent(encodeURIComponent(appsetting('SERVICE_BUS_QUEUE_NAME')))}/messages/head",
-                    "queries": {
-                        "maxMessageCount": 1,
-                        "subscriptionType": "Queue"
+                    "serviceProviderConfiguration": {
+                        "connectionName": "serviceBus",
+                        "operationId": "receiveQueueMessages",
+                        "serviceProviderId": "/serviceProviders/serviceBus"
                     }
                 },
-                "recurrence": {
-                    "frequency": "Minute",
-                    "interval": 1
-                },
-                "operationOptions": "DisableAsyncPattern"
+                "splitOn": "@triggerOutputs()?['body']"
             }
         },
         "actions": {
@@ -56,46 +50,43 @@
                         }
                     },
                     "Get_Blob_Content": {
-                        "type": "ApiConnection",
+                        "type": "ServiceProvider",
                         "runAfter": {
                             "Parse_Service_Bus_Message": [
                                 "Succeeded"
                             ]
                         },
                         "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "azureblob"
-                                }
+                            "parameters": {
+                                "containerName": "feed-export",
+                                "blobName": "@body('Parse_Service_Bus_Message')?['BlobPath']"
                             },
-                            "method": "get",
-                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(appsetting('BLOB_STORAGE_ACCOUNT')))}/files/@{encodeURIComponent(encodeURIComponent(body('Parse_Service_Bus_Message')?['BlobPath']))}/content",
-                            "queries": {
-                                "inferContentType": true
+                            "serviceProviderConfiguration": {
+                                "connectionName": "azureBlob",
+                                "operationId": "readBlob",
+                                "serviceProviderId": "/serviceProviders/AzureBlob"
                             }
                         }
                     },
                     "Upload_To_SFTP": {
-                        "type": "ApiConnection",
+                        "type": "ServiceProvider",
                         "runAfter": {
                             "Get_Blob_Content": [
                                 "Succeeded"
                             ]
                         },
                         "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "sftpssh"
-                                }
+                            "parameters": {
+                                "folderPath": "@appsetting('SFTP_FOLDER_PATH')",
+                                "fileName": "@body('Parse_Service_Bus_Message')?['FileName']",
+                                "overwriteFileIfExists": true,
+                                "fileContent": "@body('Get_Blob_Content')"
                             },
-                            "method": "post",
-                            "path": "/v2/datasets/default/files",
-                            "queries": {
-                                "folderPath": "/inbound/feeds",
-                                "name": "@body('Parse_Service_Bus_Message')?['FileName']",
-                                "overwrite": true
-                            },
-                            "body": "@body('Get_Blob_Content')"
+                            "serviceProviderConfiguration": {
+                                "connectionName": "sftp",
+                                "operationId": "uploadFile",
+                                "serviceProviderId": "/serviceProviders/Sftp"
+                            }
                         }
                     },
                     "Invoke_Azure_Function": {
@@ -118,24 +109,22 @@
                         }
                     },
                     "Complete_Service_Bus_Message": {
-                        "type": "ApiConnection",
+                        "type": "ServiceProvider",
                         "runAfter": {
                             "Invoke_Azure_Function": [
                                 "Succeeded"
                             ]
                         },
                         "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "servicebus"
-                                }
-                            },
-                            "method": "delete",
-                            "path": "/@{encodeURIComponent(encodeURIComponent(appsetting('SERVICE_BUS_QUEUE_NAME')))}/messages/complete",
-                            "queries": {
+                            "parameters": {
+                                "messageId": "@triggerBody()?['MessageId']",
                                 "lockToken": "@triggerBody()?['LockToken']",
-                                "sessionId": "",
-                                "subscriptionType": "Queue"
+                                "queueName": "@appsetting('SERVICE_BUS_QUEUE_NAME')"
+                            },
+                            "serviceProviderConfiguration": {
+                                "connectionName": "serviceBus",
+                                "operationId": "completeQueueMessage",
+                                "serviceProviderId": "/serviceProviders/serviceBus"
                             }
                         }
                     }
@@ -146,19 +135,18 @@
                 "type": "Scope",
                 "actions": {
                     "Abandon_Service_Bus_Message": {
-                        "type": "ApiConnection",
+                        "type": "ServiceProvider",
                         "runAfter": {},
                         "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "servicebus"
-                                }
-                            },
-                            "method": "post",
-                            "path": "/@{encodeURIComponent(encodeURIComponent(appsetting('SERVICE_BUS_QUEUE_NAME')))}/messages/abandon",
-                            "queries": {
+                            "parameters": {
+                                "messageId": "@triggerBody()?['MessageId']",
                                 "lockToken": "@triggerBody()?['LockToken']",
-                                "subscriptionType": "Queue"
+                                "queueName": "@appsetting('SERVICE_BUS_QUEUE_NAME')"
+                            },
+                            "serviceProviderConfiguration": {
+                                "connectionName": "serviceBus",
+                                "operationId": "abandonQueueMessage",
+                                "serviceProviderId": "/serviceProviders/serviceBus"
                             }
                         }
                     }

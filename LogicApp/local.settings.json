@@ -1,17 +1,25 @@
 {
     "IsEncrypted": false,
     "Values": {
-        "AzureWebJobsStorage": "<storage-connection-string>",
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
         "FUNCTIONS_WORKER_RUNTIME": "node",
         "WORKFLOWS_SUBSCRIPTION_ID": "<subscription-id>",
         "WORKFLOWS_RESOURCE_GROUP_NAME": "<rg-name>",
         "WORKFLOWS_LOCATION_NAME": "<region>",
         "WORKFLOWS_MANAGEMENT_BASE_URI": "https://management.azure.com/",
 
+        "SERVICE_BUS_CONNECTION_STRING": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/ServiceBusConnectionString/)",
         "SERVICE_BUS_QUEUE_NAME": "feed-export-queue",
-        "BLOB_STORAGE_ACCOUNT": "<storage-account-name>",
-        "AZURE_FUNCTION_URL": "<azure-function-url>/api/UpdateFeedBatchExported",
-        "AZURE_FUNCTION_KEY": "<azure-function-key>",
-        "SFTPSSH_CONNECTION_KEY": "<sftp-connection-key>"
+
+        "BLOB_CONNECTION_STRING": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/BlobConnectionString/)",
+
+        "SFTP_HOST": "10.171.4.11",
+        "SFTP_PORT": "3022",
+        "SFTP_USERNAME": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/SftpUsername/)",
+        "SFTP_PASSWORD": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/SftpPassword/)",
+        "SFTP_FOLDER_PATH": "/inbound/feeds",
+
+        "AZURE_FUNCTION_URL": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/AzureFunctionUrl/)",
+        "AZURE_FUNCTION_KEY": "@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/AzureFunctionKey/)"
     }
 }
