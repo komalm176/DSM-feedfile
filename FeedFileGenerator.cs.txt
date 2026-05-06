@@ -1,0 +1,29 @@
+using System.Text;
+
+namespace FeedFileFunction;
+
+public static class FeedFileGenerator
+{
+    public static (string fileContent, string fileName) Generate(List<FeedRecord> records)
+    {
+        var sb = new StringBuilder();
+
+        // Header row with pipe delimiter
+        sb.AppendLine("ProviderAttachmentId|ReviewStatus|RejectReason");
+
+        foreach (var record in records)
+        {
+            // Format per record: ProviderAttachmentId|ReviewStatus|RejectReason
+            // Approved: 12345|Approved|
+            // Failed:   23456|Failed|Doc Mismatch
+            var rejectReason = record.RejectReason ?? string.Empty;
+
+            sb.AppendLine($"{record.ProviderAttachmentId}|{record.ReviewStatus}|{rejectReason}");
+        }
+
+        // File naming convention: FeedFromEDM_Portal_yyyyMMdd_HHmmss.csv
+        var fileName = $"FeedFromEDM_Portal_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+
+        return (sb.ToString(), fileName);
+    }
+}
